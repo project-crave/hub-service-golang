@@ -26,6 +26,6 @@ func NewVariable() *Variable {
 			Controller: "secret variable",
 		},
 		HubApiIp:   "localhost",
-		HubApiPort: 3001,
+		HubApiPort: 17000,
 	}
 }
