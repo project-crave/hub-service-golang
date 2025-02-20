@@ -1,4 +1,4 @@
-package hub
+package api
 
 import (
 	"net/http"
@@ -11,9 +11,11 @@ type Handler struct {
 }
 
 func NewHandler(ctrl IController) *Handler {
+
 	return &Handler{ctrl: ctrl}
 }
 
-func (h *Handler) Default(c *gin.Context) {
+func (h *Handler) Create(c *gin.Context) {
+
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }

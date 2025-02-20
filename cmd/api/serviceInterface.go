@@ -1,4 +1,4 @@
-package hub
+package api
 
 type IService interface {
 }

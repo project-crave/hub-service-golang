@@ -1,7 +1,7 @@
 package lib
 
 import (
-	"crave/hub/configuration"
+	"crave/hub/cmd/configuration"
 	"fmt"
 	"net"
 
@@ -9,6 +9,7 @@ import (
 )
 
 func Start(container *configuration.Container) error {
+
 	if err := startApiServer(container); err != nil {
 		return err
 	}
@@ -19,10 +20,11 @@ func Start(container *configuration.Container) error {
 }
 func startApiServer(container *configuration.Container) error {
 
-	hubGroup := container.Router.Group("/hub")
-	{
-		hubGroup.GET("", container.HubHandler.Default)
-	}
+	// hubGroup := container.Router.Group("/hub")
+	// {
+	// 	hubGroup.POST("/work", container.HubHandler.Open)
+	// }
+	//container.Router.Run(fmt.Sprintf(":%s", container.Variable.HubApiPort))
 	return nil
 }
 
@@ -32,7 +34,6 @@ func startGrpcServer(container *configuration.Container) error {
 		return fmt.Errorf("failed to listen : %d, %w", container.Variable.HubApiPort, err)
 	}
 	s := grpc.NewServer()
-
 	if servErr := s.Serve(lis); servErr != nil {
 		return fmt.Errorf("failed to create server: %w", err)
 	}

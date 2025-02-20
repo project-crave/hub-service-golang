@@ -1,23 +1,28 @@
 package main
 
 import (
-	hubConfig "crave/hub/configuration"
-	"crave/hub/lib"
-	"crave/shared/configuration"
-	"crave/shared/database"
+	"crave/hub/cmd/configuration"
+	"crave/hub/cmd/lib"
+	"fmt"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	variable := configuration.NewVariable()
-	database.ConnectDatabase(&variable.Database)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	//router.Use()
 	router := gin.Default()
-	container := hubConfig.NewContainer(&variable.HubVariable, &database.DB, router)
-	go startApiLib(container)
-	router.Run(":3000")
+	go func() {
+		defer wg.Done()
+		startLib(router)
+	}()
+	wg.Wait()
 }
 
-func startApiLib(container *hubConfig.Container) {
+func startLib(router *gin.Engine) {
+	container := configuration.NewContainer(router)
 	go lib.Start(container)
+	router.Run(fmt.Sprintf(":%d", container.Variable.HubApiPort))
 }

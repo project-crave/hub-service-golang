@@ -1,10 +1,8 @@
 package configuration
 
-type Database struct {
-	Uri      string
-	Username string
-	Password string
-}
+import (
+	craveConfiguration "crave/shared/configuration"
+)
 
 type Secret struct {
 	Controller string
@@ -14,7 +12,7 @@ type Dependency struct {
 }
 
 type Variable struct {
-	Databese   *Database
+	Databese   *craveConfiguration.Database
 	Secret     *Secret
 	Dependency *Dependency
 	HubApiIp   string
@@ -22,15 +20,12 @@ type Variable struct {
 }
 
 func NewVariable() *Variable {
-return &Variable{
-		Databese: &Database{
-			Uri:      "bolt://localhost:7687",
-			Username: "neo4j",
-			Password: "password",
-		},
+	return &Variable{
+
 		Secret: &Secret{
 			Controller: "secret variable",
 		},
-		HubApiIp: "localhost",
+		HubApiIp:   "localhost",
+		HubApiPort: 3001,
 	}
 }

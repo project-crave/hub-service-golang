@@ -1,36 +1,36 @@
 package configuration
 
 import (
-	hub "crave/hub/api"
+	"crave/hub/cmd/api"
 
 	"github.com/gin-gonic/gin"
-	"github.com/neo4j/neo4j-go-driver/neo4j"
 )
 
 type Container struct {
 	Variable      *Variable
 	Router        *gin.Engine
-	HubHandler    hub.IHandler
-	HubController hub.IController
-	HubService    hub.IService
-	HubRepository hub.IRepository
+	HubHandler    api.IHandler
+	HubController api.IController
+	HubService    api.IService
+	HubRepository api.IRepository
 }
 
-func NewContainer(variable *Variable, DB *neo4j.Driver, router *gin.Engine) *Container {
-	if variable != nil {
-		variable = NewVariable()
+func NewContainer(router *gin.Engine) *Container {
+	if router == nil {
+		router = gin.Default()
 	}
+	variable := NewVariable()
 
-	repo := hub.NewRepository(DB)
-	service := hub.NewService(repo)
-	controller := hub.NewController(service)
-	handler := hub.NewHandler(controller)
+	repo := api.NewRepository()
+	service := api.NewService(repo)
+	controller := api.NewController(service)
+	handler := api.NewHandler(controller)
 	return &Container{
 		Variable:      variable,
 		Router:        router,
 		HubRepository: repo,
 		HubService:    service,
-		HubController: service,
+		HubController: controller,
 		HubHandler:    handler,
 	}
 }
