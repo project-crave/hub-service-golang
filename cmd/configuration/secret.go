@@ -12,20 +12,25 @@ type Dependency struct {
 }
 
 type Variable struct {
-	Databese   *craveConfiguration.Database
+	Database   *craveConfiguration.Database
 	Secret     *Secret
 	Dependency *Dependency
-	HubApiIp   string
-	HubApiPort uint16
+	Api        *craveConfiguration.Api
 }
 
 func NewVariable() *Variable {
 	return &Variable{
-
-		Secret: &Secret{
-			Controller: "secret variable",
+		Database: &craveConfiguration.Database{
+			Uri:      "127.0.0.1:18000",
+			Username: "root",
+			Password: "root",
 		},
-		HubApiIp:   "localhost",
-		HubApiPort: 17000,
+		Secret: &Secret{
+			Controller: "secretValue",
+		},
+		Api: &craveConfiguration.Api{
+			Ip:   "localhost",
+			Port: 3000,
+		},
 	}
 }
