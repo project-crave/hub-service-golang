@@ -22,4 +22,4 @@ COPY --from=builder /app/ .
 EXPOSE 5000
 
 # Command to run the nginx service binary
-CMD ["sh", "-c", "/app/cmd/main
+CMD ["sh", "-c", "/app/cmd/main"]
