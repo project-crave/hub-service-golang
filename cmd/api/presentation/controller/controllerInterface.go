@@ -7,5 +7,5 @@ import (
 
 type IController interface {
 	api.IController
-	SaveWork(work *model.Work)
+	CreateWork(work *model.Work) error
 }

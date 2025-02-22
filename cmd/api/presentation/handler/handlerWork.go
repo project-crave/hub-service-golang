@@ -23,6 +23,6 @@ func (h *HandlerWork) CreateWork(c *gin.Context) {
 	algorithm := c.Query("algorithm")
 	step := c.Query("step")
 	filter := c.Query("filter")
-	h.ctrl.SaveWork(model.WorkFrom(page, origin, destionation, algorithm, step, filter))
+	h.ctrl.CreateWork(model.WorkFrom(page, origin, destionation, algorithm, step, filter))
 	c.Status(http.StatusOK)
 }

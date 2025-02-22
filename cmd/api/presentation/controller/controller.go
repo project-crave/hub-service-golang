@@ -4,18 +4,57 @@ import (
 	"crave/hub/cmd/api/domain/service"
 	hub "crave/hub/cmd/api/domain/service"
 	"crave/hub/cmd/model"
+	target "crave/hub/cmd/target/cmd/api/domain/service"
 	work "crave/hub/cmd/work/cmd/api/domain/service"
+	craveModel "crave/shared/model"
+	"math"
 )
 
 type Controller struct {
-	svc     hub.IService
-	workSvc work.IService
+	svc       hub.IService
+	workSvc   work.IService
+	targetSvc target.IService
 }
 
-func NewController(svc service.IService, workSvc work.IService) *Controller {
-	return &Controller{svc: svc, workSvc: workSvc}
+func NewController(svc service.IService, workSvc work.IService, targetSvc target.IService) *Controller {
+	return &Controller{svc: svc, workSvc: workSvc, targetSvc: targetSvc}
 }
 
-func (c *Controller) SaveWork(work *model.Work) {
-	c.workSvc.SaveWork(work)
+func (c *Controller) CreateWork(work *model.Work) error {
+	savedWork, err := c.workSvc.SaveWork(work)
+	if err != nil {
+		return err
+	}
+	org, dest, err := c.createOriginAndDestination(savedWork)
+	if err != nil {
+		return err
+	}
+	return c.targetSvc.Init(org, dest)
+}
+
+func (c *Controller) createOriginAndDestination(work *model.Work) (*model.Target, *model.Target, error) {
+
+	prio := c.getPriority(&work.Algorithm)
+
+	origin := &model.Target{
+		WorkId:   work.Id,
+		Previous: 0,
+		Name:     work.Origin,
+		Id:       1,
+		Priority: prio,
+	}
+	destination := &model.Target{
+		WorkId:   work.Id,
+		Previous: 0,
+		Name:     work.Destination,
+		Id:       math.MaxUint64,
+		Priority: prio,
+	}
+
+	return origin, destination, nil
+}
+
+func (c *Controller) getPriority(algo *craveModel.Algorithm) int {
+
+	return 0
 }

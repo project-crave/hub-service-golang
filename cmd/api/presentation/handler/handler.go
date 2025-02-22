@@ -22,6 +22,6 @@ func (h *Handler) CreateWork(c *gin.Context) {
 	if err := c.ShouldBindQuery(&input); err != nil {
 		c.Status(http.StatusBadRequest)
 	}
-	h.ctrl.SaveWork(&input)
+	h.ctrl.CreateWork(&input)
 	c.Status(http.StatusOK)
 }
