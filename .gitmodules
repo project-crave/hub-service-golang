@@ -1,3 +1,7 @@
 [submodule "cmd/work"]
 	path = cmd/work
 	url = https://github.com/project-crave/work-service-golang
+[submodule "cmd/target"]
+	path = cmd/target
+	url = https://github.com/project-crave/target-service-golang
+
