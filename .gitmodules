@@ -1,0 +1,3 @@
+[submodule "cmd/work"]
+	path = cmd/work
+	url = https://github.com/project-crave/work-service-golang
