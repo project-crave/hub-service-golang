@@ -9,6 +9,11 @@ type Secret struct {
 }
 
 type Dependency struct {
+	MinerGrpc *craveConfiguration.Api
+}
+
+type Miner struct {
+	Api *craveConfiguration.Api
 }
 
 type Variable struct {
@@ -27,6 +32,12 @@ func NewVariable() *Variable {
 		},
 		Secret: &Secret{
 			Controller: "secretValue",
+		},
+		Dependency: &Dependency{
+			MinerGrpc: &craveConfiguration.Api{
+				Ip:   "localhost",
+				Port: 3001,
+			},
 		},
 		Api: &craveConfiguration.Api{
 			Ip:   "localhost",

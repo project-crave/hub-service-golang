@@ -2,17 +2,20 @@ package configuration
 
 import (
 	"crave/hub/cmd/api/domain/service"
-	"crave/hub/cmd/api/infrastructure/repository"
 	"crave/hub/cmd/api/presentation/controller"
 	"crave/hub/cmd/api/presentation/handler"
-	"crave/hub/cmd/model"
+	"crave/hub/cmd/target/cmd/api/infrastructure/externalApi"
 	target "crave/hub/cmd/target/cmd/configuration"
 	work "crave/hub/cmd/work/cmd/configuration"
 	"crave/shared/database"
 	"fmt"
 	"net/http"
 
+	pb "crave/shared/proto/miner"
+
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type HubWorkContainer struct {
@@ -41,11 +44,6 @@ func (ctnr *HubWorkContainer) DefineGrpc() error {
 }
 
 func (ctnr *HubWorkContainer) DefineDatabase() error {
-	ctnr.MysqlWrapper = database.ConnectMysqlDatabase(ctnr.Variable.Database)
-
-	if err := ctnr.MysqlWrapper.Driver.AutoMigrate(&model.Target{}); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -71,12 +69,24 @@ func (ctnr *HubWorkContainer) InitDependency(database any) error {
 	ctnr.HubService = service.NewService(ctnr.TargetContainer.TargetRepository)
 	ctnr.HubController = controller.NewController(ctnr.HubService, ctnr.WorkContainer.WorkService, ctnr.TargetContainer.TargetService)
 	ctnr.HubHandler = handler.NewHandlerWork(ctnr.HubController)
+	return nil
+}
+
+func (ctnr *HubWorkContainer) newGrpcMinerClient() pb.MinerClient {
+	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d",
+		ctnr.Variable.Dependency.MinerGrpc.Ip,
+		ctnr.Variable.Dependency.MinerGrpc.Port),
+		grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil
+	}
+
+	return pb.NewMinerClient(conn)
 }
 
 func NewHubWorkContainer(router *gin.Engine) *HubWorkContainer {
 	ctnr := &HubWorkContainer{}
 	ctnr.InitVariable()
-	ctnr.DefineDatabase()
 	ctnr.InitDependency(nil)
 	ctnr.SetRouter(router)
 	return ctnr
