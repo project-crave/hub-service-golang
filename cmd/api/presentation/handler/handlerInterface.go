@@ -9,4 +9,5 @@ import (
 type IHandler interface {
 	api.IHandler
 	CreateWork(c *gin.Context)
+	BeginWork(c *gin.Context)
 }

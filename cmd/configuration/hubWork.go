@@ -53,6 +53,7 @@ func (ctnr *HubWorkContainer) DefineRoute() error {
 	userGroup := ctnr.Router.Group("/hub")
 	{
 		userGroup.POST("/works", ctnr.HubHandler.CreateWork)
+		userGroup.PATCH("/works/:workId/start", ctnr.HubHandler.BeginWork)
 	}
 	ctnr.Router.Run(fmt.Sprintf(":%d", ctnr.Variable.Api.Port))
 	return nil
@@ -63,10 +64,11 @@ func (ctnr *HubWorkContainer) GetHttpHandler() http.Handler {
 }
 
 func (ctnr *HubWorkContainer) InitDependency(database any) error {
+	ctnr.DefineDatabase()
 	ctnr.WorkContainer = work.NewHubWorkContainer()
 	ctnr.TargetContainer = target.NewHubWorkTargetContainer()
 	ctnr.MinerClient = externalApi.NewMinerClient(fmt.Sprintf("http://%s:%d", ctnr.Variable.Dependency.MinerGrpc.Ip, ctnr.Variable.Dependency.MinerGrpc.Port), ctnr.newGrpcMinerClient())
-	ctnr.HubService = service.NewService(ctnr.MinerClient, ctnr.TargetContainer.TargetRepository)
+	ctnr.HubService = service.NewService(ctnr.TargetContainer.TargetRepository)
 	ctnr.HubController = controller.NewController(ctnr.HubService, ctnr.WorkContainer.WorkService, ctnr.TargetContainer.TargetService)
 	ctnr.HubHandler = handler.NewHandlerWork(ctnr.HubController)
 }

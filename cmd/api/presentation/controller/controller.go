@@ -58,3 +58,12 @@ func (c *Controller) getPriority(algo *craveModel.Algorithm) int {
 
 	return 0
 }
+
+func (c *Controller) BeginWork(workId uint16) error {
+	work, err := c.workSvc.GetWork(workId)
+	if err != nil {
+		return err
+	}
+	go c.targetSvc.MineFirstTargets(work.Id, work.Algorithm, work.Page, work.Step, work.Filter)
+	return nil
+}
