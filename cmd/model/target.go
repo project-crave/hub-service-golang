@@ -2,10 +2,10 @@ package model
 
 type Target struct {
 	WorkId   uint16 `gorm:"primaryKey;uniqueIndex:idx_target"`
-	Previous uint64 `gorm:"primaryKey"`
+	Previous int64  `gorm:"primaryKey"`
 	Name     string `gorm:"primaryKey;type:varchar(20);uniqueIndex:idx_target"`
-	Id       uint64 `gorm:"not null"`
-	Done     bool   `gorm:"default:false"`
+	Id       int64  `gorm:"not null"`
+	Status   Status `gorm:"default:0"`
 	Priority int    `gorm:"uniqueIndex:idx_target;not null"`
 }
 
