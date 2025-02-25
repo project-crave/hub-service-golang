@@ -2,7 +2,7 @@ package model
 
 type Target struct {
 	WorkId   uint16 `gorm:"primaryKey;uniqueIndex:idx_target"`
-	Previous uint   `gorm:"primaryKey"`
+	Previous uint64 `gorm:"primaryKey"`
 	Name     string `gorm:"primaryKey;type:varchar(20);uniqueIndex:idx_target"`
 	Id       uint64 `gorm:"not null"`
 	Done     bool   `gorm:"default:false"`
