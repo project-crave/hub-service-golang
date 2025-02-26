@@ -54,6 +54,7 @@ func (work *Work) ToCache() WorkCache {
 
 func (wc *WorkCache) ToWork(id uint16) *Work {
 	return &Work{
+		Id:          id,
 		Page:        wc.Page,
 		Origin:      wc.Origin,
 		Destination: wc.Destination,
