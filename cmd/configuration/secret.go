@@ -21,6 +21,7 @@ type Variable struct {
 	Secret     *Secret
 	Dependency *Dependency
 	Api        *craveConfiguration.Api
+	GrpcApi    *craveConfiguration.Api
 }
 
 func NewVariable() *Variable {
@@ -42,6 +43,10 @@ func NewVariable() *Variable {
 		Api: &craveConfiguration.Api{
 			Ip:   "localhost",
 			Port: 3000,
+		},
+		GrpcApi: &craveConfiguration.Api{
+			Ip:   "localhost",
+			Port: 3002,
 		},
 	}
 }

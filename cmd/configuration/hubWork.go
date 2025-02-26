@@ -9,9 +9,11 @@ import (
 	work "crave/hub/cmd/work/cmd/configuration"
 	"crave/shared/database"
 	"fmt"
+	"net"
 	"net/http"
 
-	pb "crave/shared/proto/miner"
+	hubPb "crave/shared/proto/hub"
+	minerPb "crave/shared/proto/miner"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
@@ -40,6 +42,15 @@ func (ctnr *HubWorkContainer) InitVariable() error {
 }
 
 func (ctnr *HubWorkContainer) DefineGrpc() error {
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", ctnr.Variable.GrpcApi.Ip, ctnr.Variable.GrpcApi.Port))
+	if err != nil {
+		return fmt.Errorf("failed to listen : %d, %w", ctnr.Variable.GrpcApi.Port, err)
+	}
+	server := grpc.NewServer()
+	hubPb.RegisterHubServer(server, ctnr.HubHandler)
+	if servErr := server.Serve(lis); servErr != nil {
+		return fmt.Errorf("failed to create server: %w", err)
+	}
 	return nil
 }
 
@@ -72,7 +83,7 @@ func (ctnr *HubWorkContainer) InitDependency(database any) error {
 	return nil
 }
 
-func (ctnr *HubWorkContainer) newGrpcMinerClient() pb.MinerClient {
+func (ctnr *HubWorkContainer) newGrpcMinerClient() minerPb.MinerClient {
 	conn, err := grpc.NewClient(fmt.Sprintf("%s:%d",
 		ctnr.Variable.Dependency.MinerGrpc.Ip,
 		ctnr.Variable.Dependency.MinerGrpc.Port),
@@ -81,7 +92,7 @@ func (ctnr *HubWorkContainer) newGrpcMinerClient() pb.MinerClient {
 		return nil
 	}
 
-	return pb.NewMinerClient(conn)
+	return minerPb.NewMinerClient(conn)
 }
 
 func NewHubWorkContainer(router *gin.Engine) *HubWorkContainer {

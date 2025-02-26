@@ -9,4 +9,5 @@ type IController interface {
 	api.IController
 	CreateWork(work *model.Work) error
 	BeginWork(workId uint16) error
+	HandleParsedTargets(name string, targets []string) error
 }

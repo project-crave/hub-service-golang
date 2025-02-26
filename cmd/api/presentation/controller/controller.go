@@ -64,6 +64,30 @@ func (c *Controller) BeginWork(workId uint16) error {
 	if err != nil {
 		return err
 	}
-	go c.targetSvc.MineFirstTargets(work.Id, work.Algorithm, work.Page, work.Step, work.Filter)
+	go c.targetSvc.MineFirstTargets(workId, work.Algorithm, work.Page, work.Step, work.Filter)
+	go c.workSvc.UpdateStatus(work, model.PROCESSING)
+	return nil
+}
+
+func (c *Controller) HandleParsedTargets(previousName string, targets []string) error {
+	previous, err := c.targetSvc.FindProcessingPreviousTarget(previousName)
+	if err != nil {
+		return err
+	}
+	c.targetSvc.SaveTargets(targets, previous)
+
+	previous, err = c.targetSvc.MarkDone(previous)
+	if err != nil {
+		return err
+	}
+
+	work, err := c.workSvc.GetWork(previous.WorkId)
+	if err != nil {
+		return err
+	}
+	if work.Status == model.PROCESSING {
+		c.targetSvc.MineNext(work.Id, work.Algorithm, work.Page, work.Filter, previous)
+	}
+
 	return nil
 }

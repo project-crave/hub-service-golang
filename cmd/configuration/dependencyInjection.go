@@ -9,5 +9,4 @@ import (
 func NewContainer(router *gin.Engine) configuration.IContainer {
 	ctnr := NewHubWorkContainer(router)
 	return ctnr
-
 }
