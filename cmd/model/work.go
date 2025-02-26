@@ -38,6 +38,7 @@ type WorkCache struct {
 	Algorithm   craveModel.Algorithm
 	Step        craveModel.Step
 	Filter      craveModel.Filter
+	Status      Status
 }
 
 func (work *Work) ToCache() WorkCache {
@@ -49,6 +50,7 @@ func (work *Work) ToCache() WorkCache {
 		Algorithm:   work.Algorithm,
 		Step:        work.Step,
 		Filter:      work.Filter,
+		Status:      work.Status,
 	}
 }
 
@@ -61,5 +63,6 @@ func (wc *WorkCache) ToWork(id uint16) *Work {
 		Algorithm:   wc.Algorithm,
 		Step:        wc.Step,
 		Filter:      wc.Filter,
+		Status:      wc.Status,
 	}
 }
