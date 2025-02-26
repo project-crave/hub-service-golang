@@ -12,6 +12,7 @@ type Work struct {
 	Algorithm   craveModel.Algorithm
 	Step        craveModel.Step
 	Filter      craveModel.Filter
+	Status      Status
 }
 
 func (Work) TableName() string {
