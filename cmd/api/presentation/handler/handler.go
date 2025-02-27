@@ -24,8 +24,11 @@ func (h *Handler) CreateWork(c *gin.Context) {
 	if err := c.ShouldBindQuery(&input); err != nil {
 		c.Status(http.StatusBadRequest)
 	}
-	h.ctrl.CreateWork(&input)
-	c.Status(http.StatusOK)
+	createdWorkId, err := h.ctrl.CreateWork(&input)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+	}
+	c.String(http.StatusOK, fmt.Sprintf("%d", createdWorkId))
 }
 
 func (h *Handler) BeginWork(c *gin.Context) {
