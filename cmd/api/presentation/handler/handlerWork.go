@@ -32,8 +32,11 @@ func (h *HandlerWork) CreateWork(c *gin.Context) {
 	algorithm := c.Query("algorithm")
 	step := c.Query("step")
 	filter := c.Query("filter")
-	h.ctrl.CreateWork(model.WorkFrom(page, origin, destionation, algorithm, step, filter))
-	c.Status(http.StatusOK)
+	createdWorkId, err := h.ctrl.CreateWork(model.WorkFrom(page, origin, destionation, algorithm, step, filter))
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+	}
+	c.String(http.StatusOK, fmt.Sprintf("%d", createdWorkId))
 }
 
 func (h *HandlerWork) BeginWork(c *gin.Context) {

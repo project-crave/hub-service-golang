@@ -20,16 +20,19 @@ func NewController(svc service.IService, workSvc work.IService, targetSvc target
 	return &Controller{svc: svc, workSvc: workSvc, targetSvc: targetSvc}
 }
 
-func (c *Controller) CreateWork(work *model.Work) error {
+func (c *Controller) CreateWork(work *model.Work) (uint16, error) {
 	savedWork, err := c.workSvc.SaveWork(work)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	org, dest, err := c.createOriginAndDestination(savedWork)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return c.targetSvc.Init(org, dest)
+	if err := c.targetSvc.Init(org, dest); err != nil {
+		return 0, err
+	}
+	return savedWork.Id, nil
 }
 
 func (c *Controller) createOriginAndDestination(work *model.Work) (*model.Target, *model.Target, error) {
