@@ -45,6 +45,7 @@ func (c *Controller) createOriginAndDestination(work *model.Work) (*model.Target
 		Name:     work.Origin,
 		Id:       math.MinInt64,
 		Priority: prio,
+		Status: 1,
 	}
 	destination := &model.Target{
 		WorkId:   work.Id,
@@ -52,6 +53,7 @@ func (c *Controller) createOriginAndDestination(work *model.Work) (*model.Target
 		Name:     work.Destination,
 		Id:       math.MaxInt64,
 		Priority: prio,
+		Status: 1,
 	}
 
 	return origin, destination, nil
