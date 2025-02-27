@@ -27,6 +27,7 @@ func WorkFrom(page, org, dest, algo, step, filter string) *Work {
 		Algorithm:   craveModel.AlgorithmFromString(algo),
 		Step:        craveModel.StepFromString(step),
 		Filter:      craveModel.FilterFromString(filter),
+		Status:      1,
 	}
 }
 

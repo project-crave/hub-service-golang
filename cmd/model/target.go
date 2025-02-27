@@ -25,9 +25,9 @@ func NewTargetFromPrevious(name string, previous *Target) Target {
 	}
 }
 
-func NewTargetsFrom(names []string, previous *Target) *[]Target {
-	targets := make([]Target, 0, len(names))
-	for _, name := range names {
+func NewTargetsFrom(names *[]string, previous *Target) *[]Target {
+	var targets []Target
+	for _, name := range *names {
 		if ValidateName(name) {
 			targets = append(targets, NewTargetFromPrevious(name, previous))
 		}

@@ -153,26 +153,3 @@ func (c *Controller) ContinueWork(workId uint16) error {
 	go c.beginDualStepsWork(work)
 	return nil
 }
-
-func (c *Controller) HandleParsedTargets(previousName string, targets []string) error {
-	previous, err := c.targetSvc.FindProcessingPreviousTarget(previousName)
-	if err != nil {
-		return err
-	}
-	c.targetSvc.SaveTargets(targets, previous)
-
-	previous, err = c.targetSvc.MarkDone(previous)
-	if err != nil {
-		return err
-	}
-
-	work, err := c.workSvc.GetWork(previous.WorkId)
-	if err != nil {
-		return err
-	}
-	if work.Status == model.PROCESSING {
-		c.targetSvc.MineNext(work.Id, work.Algorithm, work.Page, work.Filter, previous)
-	}
-
-	return nil
-}

@@ -3,6 +3,7 @@ package handler
 import (
 	hub "crave/hub/cmd/api/presentation/controller"
 	"crave/hub/cmd/model"
+	pb "crave/shared/proto/hub"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 )
 
 type Handler struct {
+	pb.UnimplementedHubServer
 	ctrl hub.IController
 }
 
