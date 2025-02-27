@@ -12,4 +12,6 @@ type IHandler interface {
 	pb.HubServer
 	CreateWork(c *gin.Context)
 	BeginWork(c *gin.Context)
+	PauseWork(c *gin.Context)
+	ContinueWork(c *gin.Context)
 }

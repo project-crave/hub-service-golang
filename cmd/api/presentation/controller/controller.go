@@ -84,11 +84,12 @@ func (c *Controller) beginSingleStepsWork(work *model.Work) {
 		return
 	}
 	for {
-		if work.Status == model.PROCESSING {
-			minedTarget, err = c.targetSvc.MineNext(work, minedTarget)
+		if work.Status != model.PROCESSING {
+			break
 		}
+		minedTarget, err = c.targetSvc.MineNext(work, minedTarget)
 		if err != nil {
-			return
+			break
 		}
 	}
 }
@@ -104,13 +105,13 @@ func (c *Controller) beginDualStepsWork(work *model.Work) {
 		for {
 			workFront := *work
 			workFront.Step = craveModel.Front
-			if workFront.Status == model.PROCESSING {
-				minedTarget, err = c.targetSvc.MineNext(&workFront, minedTarget)
+			if workFront.Status != model.PROCESSING {
+				break
 			}
+			minedTarget, err = c.targetSvc.MineNext(&workFront, minedTarget)
 			if err != nil {
-				return
+				break
 			}
-
 		}
 	}()
 	go func() {
@@ -123,15 +124,34 @@ func (c *Controller) beginDualStepsWork(work *model.Work) {
 		for {
 			workBack := *work
 			workBack.Step = craveModel.Back
-			if workBack.Status == model.PROCESSING {
-				minedTarget, err = c.targetSvc.MineNext(&workBack, minedTarget)
+			if workBack.Status != model.PROCESSING {
+				break
 			}
+			minedTarget, err = c.targetSvc.MineNext(&workBack, minedTarget)
 			if err != nil {
-				return
+				break
 			}
 		}
 	}()
 
+}
+
+func (c *Controller) PauseWork(workId uint16) error {
+	return c.workSvc.PauseWork(workId)
+}
+
+func (c *Controller) ContinueWork(workId uint16) error {
+	work, err := c.workSvc.GetWork(workId)
+	if err != nil {
+		return err
+	}
+	go c.workSvc.UpdateStatus(work, model.PROCESSING)
+	if work.Step != craveModel.Dual {
+		go c.beginSingleStepsWork(work)
+		return nil
+	}
+	go c.beginDualStepsWork(work)
+	return nil
 }
 
 func (c *Controller) HandleParsedTargets(previousName string, targets []string) error {

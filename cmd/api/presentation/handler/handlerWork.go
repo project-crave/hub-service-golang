@@ -50,6 +50,29 @@ func (h *HandlerWork) BeginWork(c *gin.Context) {
 	}
 	c.Status(http.StatusOK)
 }
+func (h *HandlerWork) PauseWork(c *gin.Context) {
+	workId := c.Param("workId")
+	workIdUint64, err := strconv.ParseUint(workId, 10, 16)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fmt.Sprintf("failed to parse work id: %w", err))
+	}
+	if err := h.ctrl.PauseWork(uint16(workIdUint64)); err != nil {
+		c.JSON(http.StatusBadRequest, fmt.Sprintf("failed to pause work with id: %w", err))
+	}
+	c.Status(http.StatusOK)
+}
+
+func (h *HandlerWork) ContinueWork(c *gin.Context) {
+	workId := c.Param("workId")
+	workIdUint64, err := strconv.ParseUint(workId, 10, 16)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, fmt.Sprintf("failed to parse work id: %w", err))
+	}
+	if err := h.ctrl.ContinueWork(uint16(workIdUint64)); err != nil {
+		c.JSON(http.StatusBadRequest, fmt.Sprintf("failed to continue work with id: %w", err))
+	}
+	c.Status(http.StatusOK)
+}
 
 func (h *HandlerWork) ParseResult(ctx context.Context, req *pb.ParseResultRequest) (*empty.Empty, error) {
 	h.ctrl.HandleParsedTargets(req.Name, req.Targets)

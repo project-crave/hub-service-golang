@@ -63,6 +63,8 @@ func (ctnr *HubWorkContainer) DefineRoute() error {
 	{
 		userGroup.POST("/works", ctnr.HubHandler.CreateWork)
 		userGroup.PATCH("/works/:workId/start", ctnr.HubHandler.BeginWork)
+		userGroup.PATCH("/works/:workId/pause", ctnr.HubHandler.PauseWork)
+		userGroup.PATCH("/works/:workId/continue", ctnr.HubHandler.ContinueWork)
 	}
 	ctnr.Router.Run(fmt.Sprintf(":%d", ctnr.Variable.Api.Port))
 	return nil
