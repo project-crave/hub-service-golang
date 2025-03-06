@@ -25,6 +25,16 @@ func NewTargetFromPrevious(name string, previous *Target) Target {
 	}
 }
 
+func NewBridgeFrom(name string, previousId int64) *Target {
+	return &Target{
+		Previous: previousId,
+		Name:     name,
+		Id:       0,
+		Status:   IDLE,
+		Priority: 0,
+	}
+}
+
 func NewTargetsFrom(names *[]string, previous *Target) *[]Target {
 	var targets []Target
 	for _, name := range *names {
