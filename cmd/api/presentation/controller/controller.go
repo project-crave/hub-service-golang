@@ -138,7 +138,7 @@ func (c *Controller) mineNext(work *model.Work, previous *model.Target) (*model.
 	}
 
 	c.targetSvc.SaveTargets(targetNames, target, work.Step)
-
+	c.targetSvc.UpdateTargetStatus(previous, model.DONE)
 	return target, nil
 }
 
