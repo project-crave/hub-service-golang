@@ -10,16 +10,25 @@ import (
 	"fmt"
 	"math"
 	"sync"
+	"time"
 )
 
 type Controller struct {
-	svc       hub.IService
-	workSvc   work.IService
-	targetSvc target.IService
+	svc        hub.IService
+	workSvc    work.IService
+	targetSvc  target.IService
+	backoff    time.Duration
+	minBackoff time.Duration
+	maxBackoff time.Duration
 }
 
 func NewController(svc service.IService, workSvc work.IService, targetSvc target.IService) *Controller {
-	return &Controller{svc: svc, workSvc: workSvc, targetSvc: targetSvc}
+	return &Controller{svc: svc,
+		workSvc:    workSvc,
+		targetSvc:  targetSvc,
+		backoff:    1 * time.Minute,
+		minBackoff: 200 * time.Millisecond,
+		maxBackoff: 2 * time.Minute}
 }
 
 func (c *Controller) CreateWork(work *model.Work) (uint16, error) {
@@ -126,6 +135,95 @@ func (c *Controller) processLoopStep(work *model.Work, step craveModel.Step, pre
 	}
 }
 
+func (c *Controller) processLoopBridge(work *model.Work) {
+	backoff := c.backoff
+	minBackOff := c.minBackoff
+	maxBackoff := c.maxBackoff
+	for work.Status == model.PROCESSING {
+		foundBridge, err := c.traverseBridge(work)
+		if err != nil {
+			backoff = c.clampBackoff(backoff*2, minBackOff, maxBackoff)
+		}
+		if foundBridge != nil {
+			backoff = c.clampBackoff(backoff/2, minBackOff, maxBackoff)
+		}
+		time.Sleep(backoff)
+	}
+}
+
+func (c *Controller) clampBackoff(d, minBackoff, maxBackoff time.Duration) time.Duration {
+	if d < minBackoff {
+		return minBackoff
+	}
+	if d > maxBackoff {
+		return maxBackoff
+	}
+	return d
+}
+
+func (c *Controller) traverseBridge(work *model.Work) (*model.Target, error) {
+	bridges, err := c.targetSvc.FindBridges(work.Id)
+	if bridges == nil || err != nil {
+		return nil, err
+	}
+
+	var wg sync.WaitGroup
+	for i := range bridges {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			c.targetSvc.UpdateTargetStatus(&bridges[i], model.PROCESSING)
+		}()
+		time.Sleep(20 * time.Millisecond)
+	}
+	wg.Wait()
+	c.targetSvc.SaveTraverse(&bridges[0])
+
+	wg.Add(1)
+	go func(bridge *model.Target) {
+		defer wg.Done()
+		curForward := *bridge
+		for {
+			nextTarget := c.targetSvc.GetNextTraverseTarget(&curForward, craveModel.Front)
+			c.targetSvc.SaveTraverse(nextTarget)
+			if nextTarget.Previous == 0 {
+				break
+			}
+			curForward = *nextTarget
+		}
+		time.Sleep(20 * time.Millisecond)
+	}(&bridges[1])
+
+	wg.Add(1)
+	go func(bridge *model.Target) {
+		defer wg.Done()
+		curBackward := *bridge
+		for {
+			nextTarget := c.targetSvc.GetNextTraverseTarget(&curBackward, craveModel.Back)
+			c.targetSvc.SaveTraverse(nextTarget)
+			if nextTarget.Previous == 0 {
+				break
+			}
+			curBackward = *nextTarget
+		}
+		time.Sleep(20 * time.Millisecond)
+	}(&bridges[0])
+	wg.Wait()
+
+	for i := range bridges {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			c.targetSvc.UpdateTargetStatus(&bridges[i], model.DONE)
+		}()
+		time.Sleep(20 * time.Millisecond)
+	}
+	wg.Wait()
+
+	c.targetSvc.FlushTraverse(work.Id)
+	return &bridges[0], nil
+}
+
 func (c *Controller) mineNext(work *model.Work, previous *model.Target) (*model.Target, error) {
 	target, err := c.targetSvc.GetNextTarget(work, previous)
 	if err != nil {
@@ -167,9 +265,9 @@ func (c *Controller) beginDualStepsWork(work *model.Work) {
 
 	{
 		errChan := make(chan error, 2)
-		wg.Add(2)
 		go c.processLoopStep(work, craveModel.Back, <-backChan, errChan)
 		go c.processLoopStep(work, craveModel.Front, <-frontChan, errChan)
+		go c.processLoopBridge(work)
 		for err := range errChan {
 			fmt.Errorf("🛑Error encountered: %v", err)
 			return

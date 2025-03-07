@@ -1,5 +1,9 @@
 package model
 
+const (
+	BRIDGE_ID int64 = 0
+)
+
 type Target struct {
 	WorkId   uint16 `gorm:"primaryKey;uniqueIndex:idx_target"`
 	Previous int64  `gorm:"primaryKey"`
@@ -25,13 +29,14 @@ func NewTargetFromPrevious(name string, previous *Target) Target {
 	}
 }
 
-func NewBridgeFrom(name string, previousId int64) *Target {
+func NewBridgeFrom(name string, previous *Target) *Target {
 	return &Target{
-		Previous: previousId,
+		WorkId:   previous.WorkId,
+		Previous: previous.Id,
 		Name:     name,
 		Id:       0,
 		Status:   IDLE,
-		Priority: 0,
+		Priority: 1,
 	}
 }
 
