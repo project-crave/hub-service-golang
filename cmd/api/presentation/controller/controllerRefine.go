@@ -27,7 +27,7 @@ func NewController(svc service.IService, workSvc work.IService, targetSvc target
 		workSvc:    workSvc,
 		targetSvc:  targetSvc,
 		backoff:    1 * time.Minute,
-		minBackoff: 200 * time.Millisecond,
+		minBackoff: 3 * time.Second,
 		maxBackoff: 2 * time.Minute}
 }
 
@@ -123,9 +123,9 @@ func (c *Controller) mineFirstTarget(work *model.Work) (*model.Target, error) {
 
 func (c *Controller) processLoopStep(work *model.Work, step craveModel.Step, previous *model.Target, errChan chan<- error) {
 
+	workCopy := *work
+	workCopy.Step = step
 	for work.Status == model.PROCESSING {
-		workCopy := *work
-		workCopy.Step = step
 		minedTarget, err := c.mineNext(&workCopy, previous)
 		if err != nil {
 			errChan <- fmt.Errorf("error mining next target for %v: %w", step, err)
@@ -236,7 +236,7 @@ func (c *Controller) mineNext(work *model.Work, previous *model.Target) (*model.
 	}
 
 	c.targetSvc.SaveTargets(targetNames, target, work.Step)
-	c.targetSvc.UpdateTargetStatus(previous, model.DONE)
+	c.targetSvc.UpdateTargetStatus(target, model.DONE)
 	return target, nil
 }
 
