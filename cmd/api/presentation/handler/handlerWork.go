@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	hub "crave/hub/cmd/api/presentation/controller"
 	"crave/hub/cmd/model"
 	pb "crave/shared/proto/hub"
@@ -10,10 +9,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang/protobuf/ptypes/empty"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type HandlerWork struct {
@@ -72,10 +67,4 @@ func (h *HandlerWork) ContinueWork(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, fmt.Sprintf("failed to continue work with id: %w", err))
 	}
 	c.Status(http.StatusOK)
-}
-
-func (h *HandlerWork) ParseResult(ctx context.Context, req *pb.ParseResultRequest) (*empty.Empty, error) {
-	h.ctrl.HandleParsedTargets(req.Name, req.Targets)
-	//h.ctrl.Parse(craveModel.Step(req.Step), craveModel.Page(req.Page), req.Name, craveModel.Filter(req.Filter))
-	return &emptypb.Empty{}, status.Error(codes.OK, "")
 }
